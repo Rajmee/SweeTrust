@@ -193,7 +193,8 @@ class _SignUpPageState extends State<SignUpPage> {
                               builder: (BuildContext context, Widget child,
                                   MainModel model) {
                                 return ButtonSubmit(
-                                  title: codeSent ? 'Verify' : 'Sign up',
+                                  // title: codeSent ? 'Verify' : 'Sign up',
+                                  title: 'Sign Up',
                                   onTap: () async {
                                     final CustomerModel customerData =
                                         await createUser(
@@ -202,13 +203,13 @@ class _SignUpPageState extends State<SignUpPage> {
                                       _customerModel = customerData;
                                     });
 
-                                    _customerModel != null
-                                        ? verifyPhone(_phone)
-                                        // codeSent
-                                        //     ? AuthServiceSignUp().signUpWithOTP(
-                                        //         smsCode, verificationId)
-                                        //     : verifyPhone(_phone)
-                                        : _notifyAlert();
+                                    // _customerModel != null
+                                    //     ? verifyPhone(_phone)
+                                    // codeSent
+                                    //     ? AuthServiceSignUp().signUpWithOTP(
+                                    //         smsCode, verificationId)
+                                    //     : verifyPhone(_phone)
+                                    // : _notifyAlert();
                                     // setState(() {
                                     //   loading = true;
                                     // });
@@ -236,13 +237,16 @@ class _SignUpPageState extends State<SignUpPage> {
 
   Future<CustomerModel> createUser(
       String name, String phone, String password) async {
-    final String apiUrl = "https://reqres.in/api/users"; //change the url code
+    final String apiUrl = "http://http://127.0.0.1:8000"; //change the url code
 
-    final response =
-        await http.post(apiUrl, body: {"name": name, "job": phone});
+    final response = await http.post(apiUrl,
+        body: {"name": name, "phone": phone, "password": password});
 
-    if (response.statusCode == 201) {
+    if (response.statusCode == 200) {
       final String responseString = response.body;
+      codeSent
+          ? AuthServiceSignUp().signUpWithOTP(smsCode, verificationId)
+          : verifyPhone(_phone);
       return customerModelFromJson(responseString);
     } else {
       return null;
