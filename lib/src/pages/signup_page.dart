@@ -4,6 +4,7 @@ import 'package:email_validator/email_validator.dart';
 import 'package:sweet_trust/src/enums/auth_mode.dart';
 import 'package:sweet_trust/src/models/user_model.dart';
 import 'package:sweet_trust/src/scoped-model/main_model.dart';
+import 'package:sweet_trust/src/scoped-model/user_model.dart';
 import 'package:sweet_trust/src/services/auth_service_signup.dart';
 import 'package:sweet_trust/src/widgets/button_google.dart';
 import 'package:sweet_trust/src/widgets/button_submit.dart';
@@ -13,6 +14,7 @@ import 'package:sweet_trust/src/widgets/sweet_trust_title.dart';
 import 'package:sweet_trust/src/utils/responsive_builder.dart';
 import 'package:sweet_trust/src/widgets/login_account_label.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'package:http/http.dart' as http;
 import '../../src/scoped-model/customer_model.dart';
 
 import 'sigin_page.dart';
@@ -35,6 +37,8 @@ class _SignUpPageState extends State<SignUpPage> {
   String verificationId;
   String countryCode = "+88";
   String verify = "Verifying";
+
+  CustomerModel _customerModel;
 
   bool codeSent = false;
 
@@ -190,11 +194,21 @@ class _SignUpPageState extends State<SignUpPage> {
                                   MainModel model) {
                                 return ButtonSubmit(
                                   title: codeSent ? 'Verify' : 'Sign up',
-                                  onTap: () {
-                                    codeSent
-                                        ? AuthServiceSignUp().signUpWithOTP(
-                                            smsCode, verificationId)
-                                        : verifyPhone(_phone, model.addUser);
+                                  onTap: () async {
+                                    final CustomerModel customerData =
+                                        await createUser(
+                                            _username, _phone, _password);
+                                    setState(() {
+                                      _customerModel = customerData;
+                                    });
+
+                                    _customerModel != null
+                                        ? verifyPhone(_phone)
+                                        // codeSent
+                                        //     ? AuthServiceSignUp().signUpWithOTP(
+                                        //         smsCode, verificationId)
+                                        //     : verifyPhone(_phone)
+                                        : _notifyAlert();
                                     // setState(() {
                                     //   loading = true;
                                     // });
@@ -220,7 +234,22 @@ class _SignUpPageState extends State<SignUpPage> {
     ));
   }
 
-  Future<void> verifyPhone(_phone, Function addUser) async {
+  Future<CustomerModel> createUser(
+      String name, String phone, String password) async {
+    final String apiUrl = "https://reqres.in/api/users"; //change the url code
+
+    final response =
+        await http.post(apiUrl, body: {"name": name, "job": phone});
+
+    if (response.statusCode == 201) {
+      final String responseString = response.body;
+      return customerModelFromJson(responseString);
+    } else {
+      return null;
+    }
+  }
+
+  Future<CustomerModel> verifyPhone(_phone) async {
     final PhoneVerificationCompleted verified = (AuthCredential authResult) {
       AuthServiceSignUp().signUp(authResult);
     };
@@ -232,23 +261,23 @@ class _SignUpPageState extends State<SignUpPage> {
 
     final PhoneCodeSent smsSent = (String verId, [int forceResend]) {
       this.verificationId = verId;
-      setState(() {
+      setState(() async {
         this.codeSent = true;
 
-        if (_formKey.currentState.validate()) {
-          _formKey.currentState.save();
+        // if (_formKey.currentState.validate()) {
+        //   _formKey.currentState.save();
 
-          if (widget.user == null) {
-            // I wnat to add new Item
-            final User user = User(
-              username: _username,
-              phone: _phone,
-              password: _password,
-              userType: _userType,
-            );
-            addUser(user);
-          }
-        }
+        //   if (widget.user == null) {
+        //     // I wnat to add new Item
+        //     final User user = User(
+        //       username: _username,
+        //       phone: _phone,
+        //       password: _password,
+        //       userType: _userType,
+        //     );
+        //     // addUser(user);
+        //   }
+        // }
       });
     };
 
@@ -290,4 +319,10 @@ class _SignUpPageState extends State<SignUpPage> {
   //     }
   //   }
   // }
+
+  _notifyAlert() async {
+    Navigator.of(context).pop();
+    SnackBar snackBar = SnackBar(content: Text("Try Again!!!"));
+    _scaffoldKey.currentState.showSnackBar(snackBar);
+  }
 }
