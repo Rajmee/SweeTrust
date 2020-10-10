@@ -13,9 +13,11 @@ import 'package:sweet_trust/src/widgets/divider.dart';
 import 'package:sweet_trust/src/widgets/sweet_trust_title.dart';
 import 'package:sweet_trust/src/utils/responsive_builder.dart';
 import 'package:sweet_trust/src/widgets/login_account_label.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:sweet_trust/src/loader/color_loader.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:http/http.dart' as http;
-import '../../src/scoped-model/customer_model.dart';
 
 import 'sigin_page.dart';
 
@@ -38,9 +40,13 @@ class _SignUpPageState extends State<SignUpPage> {
   String countryCode = "+88";
   String verify = "Verifying";
 
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+
   CustomerModel _customerModel;
 
   bool codeSent = false;
+  bool loading = false;
+  bool isbuttonChnage = false;
 
   String defaultFontFamily = 'Roboto-Light.ttf';
   double defaultFontSize = 14;
@@ -159,101 +165,129 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget build(BuildContext context) {
     return SafeArea(child: ResponsiveBuilder(
       builder: (context, sizingInformation) {
-        return Scaffold(body: LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints viewportConstraints) {
-            return SingleChildScrollView(
-              physics: AlwaysScrollableScrollPhysics(),
-              child: Container(
-                height: sizingInformation.screenSize.height,
-                child: ConstrainedBox(
-                  constraints:
-                      BoxConstraints(minHeight: viewportConstraints.maxHeight),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 20),
-                        child: Column(
-                          children: <Widget>[
-                            SweetTrust("Sign Up"),
-                            SizedBox(
-                              height: 15,
-                            ),
-                            _signUpFormWidget(),
-                            SizedBox(
-                              height: 15,
-                            ),
-                            codeSent
-                                ? _buildOTPTextField()
-                                : SizedBox(
-                                    height: 20,
-                                  ),
-                            ScopedModelDescendant(
-                              builder: (BuildContext context, Widget child,
-                                  MainModel model) {
-                                return ButtonSubmit(
-                                  // title: codeSent ? 'Verify' : 'Sign up',
-                                  title: 'Sign Up',
-                                  onTap: () async {
-                                    final CustomerModel customerData =
-                                        await createUser(
-                                            _username, _phone, _password);
-                                    setState(() {
-                                      _customerModel = customerData;
-                                    });
-
-                                    // _customerModel != null
-                                    //     ? verifyPhone(_phone)
-                                    // codeSent
-                                    //     ? AuthServiceSignUp().signUpWithOTP(
-                                    //         smsCode, verificationId)
-                                    //     : verifyPhone(_phone)
-                                    // : _notifyAlert();
-                                    // setState(() {
-                                    //   loading = true;
-                                    // });
+        return Scaffold(
+            key: _scaffoldKey,
+            body: LayoutBuilder(
+              builder:
+                  (BuildContext context, BoxConstraints viewportConstraints) {
+                return SingleChildScrollView(
+                  physics: AlwaysScrollableScrollPhysics(),
+                  child: Container(
+                    height: sizingInformation.screenSize.height,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                          minHeight: viewportConstraints.maxHeight),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 20),
+                            child: Column(
+                              children: <Widget>[
+                                SweetTrust("Sign Up"),
+                                SizedBox(
+                                  height: 15,
+                                ),
+                                _signUpFormWidget(),
+                                SizedBox(
+                                  height: 15,
+                                ),
+                                codeSent
+                                    ? _buildOTPTextField()
+                                    : SizedBox(
+                                        height: 20,
+                                      ),
+                                Builder(
+                                  builder: (BuildContext context) {
+                                    return ButtonSubmit(
+                                      title: codeSent ? 'Verify' : 'Sign up',
+                                      // title: 'Sign Up',
+                                      onTap: () async {
+                                        if (_formKey.currentState.validate()) {
+                                          _formKey.currentState.save();
+                                          if (isbuttonChnage == false) {
+                                            final CustomerModel customerData =
+                                                await createUser(_username,
+                                                    _phone, _password);
+                                            setState(() {
+                                              _customerModel = customerData;
+                                            });
+                                          } else {
+                                            codeSent
+                                                ? AuthServiceSignUp()
+                                                    .signUpWithOTP(
+                                                        smsCode, verificationId)
+                                                : verifyPhone(_phone);
+                                          }
+                                        } else {
+                                          Scaffold.of(context).showSnackBar(
+                                              SnackBar(
+                                                  content: Text(
+                                                    "Cannot Create An Account",
+                                                    style: TextStyle(
+                                                        color: Colors.red),
+                                                  ),
+                                                  duration:
+                                                      Duration(seconds: 3)));
+                                        }
+                                      },
+                                    );
                                   },
-                                );
-                              },
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                LoginAccountLabel(),
+                              ],
                             ),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            LoginAccountLabel(),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-            );
-          },
-        ));
+                );
+              },
+            ));
       },
     ));
   }
 
   Future<CustomerModel> createUser(
       String name, String phone, String password) async {
-    final String apiUrl = "http://http://127.0.0.1:8000"; //change the url code
-
-    final response = await http.post(apiUrl,
-        body: {"name": name, "phone": phone, "password": password});
+    final response = await http.post("http://192.168.0.100:3000/signUp", body: {
+      "user": name,
+      "password": password,
+      "phn": phone,
+      "type": "customer"
+    });
 
     if (response.statusCode == 200) {
       final String responseString = response.body;
-      codeSent
-          ? AuthServiceSignUp().signUpWithOTP(smsCode, verificationId)
-          : verifyPhone(_phone);
-      return customerModelFromJson(responseString);
+
+      if (responseString == "OK") {
+        print("Not match");
+        print(responseString);
+        codeSent
+            ? AuthServiceSignUp().signUpWithOTP(smsCode, verificationId)
+            : verifyPhone(_phone);
+
+        setState(() {
+          isbuttonChnage = true;
+        });
+      } else {
+        print("Match");
+        print(responseString);
+        _notifyAlert();
+      }
+
+      // return customerModelFromJson(responseString);
     } else {
       return null;
     }
   }
 
-  Future<CustomerModel> verifyPhone(_phone) async {
+  Future<void> verifyPhone(_phone) async {
     final PhoneVerificationCompleted verified = (AuthCredential authResult) {
       AuthServiceSignUp().signUp(authResult);
     };
@@ -265,23 +299,8 @@ class _SignUpPageState extends State<SignUpPage> {
 
     final PhoneCodeSent smsSent = (String verId, [int forceResend]) {
       this.verificationId = verId;
-      setState(() async {
+      setState(() {
         this.codeSent = true;
-
-        // if (_formKey.currentState.validate()) {
-        //   _formKey.currentState.save();
-
-        //   if (widget.user == null) {
-        //     // I wnat to add new Item
-        //     final User user = User(
-        //       username: _username,
-        //       phone: _phone,
-        //       password: _password,
-        //       userType: _userType,
-        //     );
-        //     // addUser(user);
-        //   }
-        // }
       });
     };
 
@@ -298,35 +317,9 @@ class _SignUpPageState extends State<SignUpPage> {
         codeAutoRetrievalTimeout: autoTimeout);
   }
 
-  // void onSubmit(Function addUser) async {
-  //   if (_formKey.currentState.validate()) {
-  //     _formKey.currentState.save();
-
-  //     if (widget.user == null) {
-  //       // I wnat to add new Item
-  //       final User user = User(
-  //         username: _username,
-  //         phone: _phone,
-  //         password: _password,
-  //         userType: _userType,
-  //       );
-  //       bool value = await addUser(user);
-  //       if (value) {
-  //         Navigator.of(context).pop();
-  //         SnackBar snackBar = SnackBar(content: Text("Successfully signup"));
-  //         _scaffoldKey.currentState.showSnackBar(snackBar);
-  //       } else if (!value) {
-  //         Navigator.of(context).pop();
-  //         SnackBar snackBar = SnackBar(content: Text("Try again!"));
-  //         _scaffoldKey.currentState.showSnackBar(snackBar);
-  //       }
-  //     }
-  //   }
-  // }
-
   _notifyAlert() async {
-    Navigator.of(context).pop();
-    SnackBar snackBar = SnackBar(content: Text("Try Again!!!"));
+    // Navigator.of(context).pop();
+    SnackBar snackBar = SnackBar(content: Text("Account already exists !"));
     _scaffoldKey.currentState.showSnackBar(snackBar);
   }
 }

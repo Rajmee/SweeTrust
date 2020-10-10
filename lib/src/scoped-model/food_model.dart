@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:sweet_trust/src/models/food_model.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:http/http.dart' as http;
@@ -28,9 +27,9 @@ class FoodModel extends Model {
       final Map<String, dynamic> foodData = {
         "title": food.name,
         "description": food.description,
-        "category": food.category,
+        // "category": food.category,
         "price": food.price,
-        "discount": food.discount,
+        // "discount": food.discount,
       };
       final http.Response response = await http.post(
           "https://sweet-trust-43bcd.firebaseio.com/foods.json",
@@ -42,8 +41,8 @@ class FoodModel extends Model {
         id: responeData["name"],
         name: food.name,
         description: food.description,
-        category: food.category,
-        discount: food.discount,
+        // category: food.category,
+        // discount: food.discount,
         price: food.price,
       );
 
@@ -69,7 +68,7 @@ class FoodModel extends Model {
       final http.Response response =
           await http.get("https://sweet-trust-43bcd.firebaseio.com/foods.json");
 
-      // print("Fecthing data: ${response.body}");
+      print("Fecthing data: ${response.body}");
       final Map<String, dynamic> fetchedData = json.decode(response.body);
       print(fetchedData);
 
@@ -77,14 +76,15 @@ class FoodModel extends Model {
 
       fetchedData.forEach((String id, dynamic foodData) {
         Food foodItem = Food(
-            id: id,
-            name: foodData["title"],
-            description: foodData["description"],
-            category: foodData["category"],
-            price: double.parse(foodData["price"].toString()),
-            discount: double.parse(foodData["discount"].toString()),
-            district: foodData["district"],
-            area: foodData["area"]);
+          id: id,
+          name: foodData["title"],
+          description: foodData["description"],
+          area: foodData["area"],
+          lat: foodData["latitude"],
+          lng: foodData["longitude"],
+          imagePath: foodData["imgurl"],
+          price: double.parse(foodData["price"].toString()),
+        );
 
         foodItems.add(foodItem);
       });
@@ -118,8 +118,8 @@ class FoodModel extends Model {
       Food updateFoodItem = Food(
         id: foodId,
         name: foodData["title"],
-        category: foodData["category"],
-        discount: foodData['discount'],
+        // category: foodData["category"],
+        // discount: foodData['discount'],
         price: foodData['price'],
         description: foodData['description'],
       );

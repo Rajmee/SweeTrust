@@ -155,10 +155,8 @@ class _AddSweetItemsPageState extends State<AddSweetItemsPage> {
         // I wnat to add new Item
         final Food food = Food(
           name: title,
-          category: category,
           description: description,
           price: double.parse(price),
-          discount: double.parse(discount),
         );
         bool value = await addFood(food);
         if (value) {
@@ -182,13 +180,9 @@ class _AddSweetItemsPageState extends State<AddSweetItemsPage> {
           ? widget.food.name
           : widget.food != null && hint == "Description"
               ? widget.food.description
-              : widget.food != null && hint == "Category"
-                  ? widget.food.category
-                  : widget.food != null && hint == "Price"
-                      ? widget.food.price.toString()
-                      : widget.food != null && hint == "Discount"
-                          ? widget.food.discount.toString()
-                          : "",
+              : widget.food != null && hint == "Price"
+                  ? widget.food.price.toString()
+                  : "",
       decoration: InputDecoration(hintText: "$hint"),
       maxLines: maxLine,
       keyboardType: hint == "Price" || hint == "Discount"

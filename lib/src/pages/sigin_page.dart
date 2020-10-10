@@ -11,6 +11,8 @@ import 'package:sweet_trust/src/widgets/divider.dart';
 import 'package:sweet_trust/src/widgets/sweet_trust_title.dart';
 import 'package:sweet_trust/src/utils/responsive_builder.dart';
 import 'package:country_code_picker/country_code_picker.dart';
+import 'package:sweet_trust/src/scoped-model/user_model.dart';
+import 'package:http/http.dart' as http;
 
 // final GoogleSignIn googleSignIn = GoogleSignIn();
 
@@ -31,16 +33,25 @@ class _SignInPageState extends State<SignInPage> {
 
   String _phone;
   String _password;
+  String pTest = "+8801850017691";
+  String psTest = "123";
   String smsCode;
   String verificationId;
   String countryCode = "+88";
   String verify = "Verifying";
 
+  CustomerModel _customerModel;
+
   bool codeSent = false;
+  bool isbuttonChnage = false;
 
   String defaultFontFamily = 'Roboto-Light.ttf';
   double defaultFontSize = 14;
   double defaultIconSize = 17;
+
+  FormFieldValidator validator;
+
+  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
   @override
   Widget _entryField(String title, String inputTitle,
@@ -71,13 +82,6 @@ class _SignInPageState extends State<SignInPage> {
                   filled: true))
         ],
       ),
-    );
-  }
-
-  Widget _buildCountryField() {
-    return CountryCodePicker(
-      initialSelection: 'Bangladesh',
-      showCountryOnly: true,
     );
   }
 
@@ -113,44 +117,12 @@ class _SignInPageState extends State<SignInPage> {
           this._phone = countryCode + val;
         });
       },
-      // validator: (String phone) {
-      //   String errorMessage;
-      //   if (phone.length != 14) {
-      //     errorMessage = "Enter a the valid number";
-      //   }
-      //   return errorMessage;
-      // },
-    );
-  }
-
-  Widget _buildOTPTextField() {
-    return TextFormField(
-      showCursor: true,
-      decoration: InputDecoration(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(10.0)),
-          borderSide: BorderSide(
-            width: 0,
-            style: BorderStyle.none,
-          ),
-        ),
-        filled: true,
-        prefixIcon: Icon(
-          Icons.confirmation_number,
-          color: Color(0xFF666666),
-          size: defaultIconSize,
-        ),
-        fillColor: Color(0xFFF2F3F5),
-        hintStyle: TextStyle(
-            color: Color(0xFF666666),
-            fontFamily: defaultFontFamily,
-            fontSize: defaultFontSize),
-        hintText: "Enter OTP",
-      ),
-      onChanged: (val) {
-        setState(() {
-          this.smsCode = val;
-        });
+      validator: (String phone) {
+        String errorMessage;
+        if (_phone.length < 18) {
+          errorMessage = "Enter a valid number";
+        }
+        return errorMessage;
       },
     );
   }
@@ -192,15 +164,49 @@ class _SignInPageState extends State<SignInPage> {
         hintText: "Password",
       ),
       obscureText: _toggleVisibility,
-      onSaved: (String password) {
-        _password = password;
+      onChanged: (val) {
+        setState(() {
+          this._password = val;
+        });
       },
       validator: (String password) {
         String errorMessage;
-        if (password.length >= 8) {
-          errorMessage = "Enter a password with more than 8 characters";
+        if (password.length < 6) {
+          errorMessage = "Enter a password with more than 6 characters";
         }
         return errorMessage;
+      },
+    );
+  }
+
+  Widget _buildOTPTextField() {
+    return TextFormField(
+      showCursor: true,
+      decoration: InputDecoration(
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(10.0)),
+          borderSide: BorderSide(
+            width: 0,
+            style: BorderStyle.none,
+          ),
+        ),
+        filled: true,
+        prefixIcon: Icon(
+          Icons.confirmation_number,
+          color: Color(0xFF666666),
+          size: defaultIconSize,
+        ),
+        fillColor: Color(0xFFF2F3F5),
+        hintStyle: TextStyle(
+            color: Color(0xFF666666),
+            fontFamily: defaultFontFamily,
+            fontSize: defaultFontSize),
+        hintText: "Enter OTP",
+      ),
+      onChanged: (val) {
+        setState(() {
+          this.smsCode = val;
+        });
       },
     );
   }
@@ -213,13 +219,14 @@ class _SignInPageState extends State<SignInPage> {
             builder: (context, sizingInformation) {
               return SafeArea(
                 child: Scaffold(
+                    key: _scaffoldKey,
                     body: LayoutBuilder(
-                  key: _formKey,
-                  builder: (BuildContext context,
-                      BoxConstraints viewportConstraints) {
-                    return SingleChildScrollView(
-                        physics: AlwaysScrollableScrollPhysics(),
-                        child: Container(
+                      key: _formKey,
+                      builder: (BuildContext context,
+                          BoxConstraints viewportConstraints) {
+                        return SingleChildScrollView(
+                          physics: AlwaysScrollableScrollPhysics(),
+                          child: Container(
                             height: sizingInformation.screenSize.height,
                             child: ConstrainedBox(
                               constraints: BoxConstraints(
@@ -247,24 +254,24 @@ class _SignInPageState extends State<SignInPage> {
                                         : SizedBox(
                                             height: 20,
                                           ),
-                                    // _buildPasswordTextField(),
-                                    // SizedBox(
-                                    //   height: 20,
-                                    // ),
                                     Builder(builder: (context) {
                                       return ButtonSubmit(
                                         title: codeSent ? 'Verify' : 'Sign in',
-                                        onTap: () {
-                                          codeSent
-                                              ? AuthService().signInWithOTP(
-                                                  smsCode, verificationId)
-                                              : verifyPhone(_phone);
-                                          setState(() {
-                                            loading = true;
-                                          });
-
-                                          // Navigator.pushReplacementNamed(
-                                          //     context, "/mainscreen");
+                                        // title: 'Sign in',
+                                        onTap: () async {
+                                          if (isbuttonChnage == false) {
+                                            final CustomerModel customerData =
+                                                await loginUser(
+                                                    _phone, _password);
+                                            setState(() {
+                                              _customerModel = customerData;
+                                            });
+                                          } else {
+                                            codeSent
+                                                ? AuthService().signInWithOTP(
+                                                    smsCode, verificationId)
+                                                : verifyPhone(_phone);
+                                          }
                                         },
                                       );
                                     }),
@@ -278,32 +285,44 @@ class _SignInPageState extends State<SignInPage> {
                                               fontWeight: FontWeight.w500)),
                                     ),
                                     DividerWidget(),
-                                    // ButtonGoogle(
-                                    //   onPressed: () async {
-                                    //     print("Login with Google");
-                                    //     Navigator.pushReplacementNamed(
-                                    //         context, "/mainscreen");
-
-                                    //     // locator<GoogleProvider>()
-                                    //     //     .login()
-                                    //     //     .whenComplete(() {
-                                    //     //   Navigator.pushReplacementNamed(
-                                    //     //       context, "/Home");
-                                    //     // });
-                                    //     // locator<GoogleProvider>()
-                                    //     //     .createUserInFirestore(context);
-                                    //   },
-                                    // ),
                                     CreateAccountLabel()
                                   ],
                                 ),
                               ),
-                            )));
-                  },
-                )),
+                            ),
+                          ),
+                        );
+                      },
+                    )),
               );
             },
           );
+  }
+
+  Future<CustomerModel> loginUser(String phone, String password) async {
+    final response = await http.post("http://192.168.0.100:3000/signIn",
+        body: {"phn": phone, "password": password, "type": "customer"});
+
+    if (response.statusCode == 200) {
+      final String responseString = response.body;
+
+      if (responseString != "Mismatch") {
+        print("Match");
+        print(responseString);
+        codeSent
+            ? AuthService().signInWithOTP(smsCode, verificationId)
+            : verifyPhone(_phone);
+        setState(() {
+          isbuttonChnage = true;
+        });
+      }
+
+      // return customerModelFromJson(responseString);
+    } else {
+      print("Not Match");
+      _notifyAlert();
+      return null;
+    }
   }
 
   Future<void> verifyPhone(_phone) async {
@@ -334,5 +353,11 @@ class _SignInPageState extends State<SignInPage> {
         verificationFailed: verificationfailed,
         codeSent: smsSent,
         codeAutoRetrievalTimeout: autoTimeout);
+  }
+
+  _notifyAlert() async {
+    // Navigator.of(context).pop();
+    SnackBar snackBar = SnackBar(content: Text("Invalid phone or password !"));
+    _scaffoldKey.currentState.showSnackBar(snackBar);
   }
 }

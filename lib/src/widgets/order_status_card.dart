@@ -3,11 +3,13 @@ import 'package:sweet_trust/src/widgets/process_handler.dart';
 import 'package:intl/intl.dart';
 
 class AllOrderStatusCard extends StatelessWidget {
-  final String title;
-  final String description;
-  final String price;
+  final String sweetName;
+  final String areaName;
+  final String status;
+  final int orderId;
 
-  AllOrderStatusCard(this.title, this.description, this.price);
+  AllOrderStatusCard(
+      {this.sweetName, this.areaName, this.status, this.orderId});
 
   @override
   Widget build(BuildContext context) {
@@ -30,16 +32,6 @@ class AllOrderStatusCard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
-          // Container(
-          //   margin: EdgeInsets.only(right: 10.0),
-          //   width: 140.0,
-          //   height: 90.0,
-          //   decoration: BoxDecoration(
-          //       image: DecorationImage(
-          //           image: AssetImage("assets/images/map.jpg"),
-          //           fit: BoxFit.cover),
-          //       borderRadius: BorderRadius.circular(10.0)),
-          // ),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,14 +42,14 @@ class AllOrderStatusCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
                     Text(
-                      "\u{2688} $title",
+                      "\u{2688} From: $areaName",
                       style: TextStyle(
-                          fontSize: 16.0, fontWeight: FontWeight.bold),
+                          fontSize: 12.0, fontWeight: FontWeight.bold),
                     ),
                     Text(
-                      "$formattedDate",
+                      "Order id ## $orderId",
                       style: TextStyle(
-                          fontSize: 16.0, fontWeight: FontWeight.bold),
+                          fontSize: 12.0, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -78,11 +70,11 @@ class AllOrderStatusCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
                     Text(
-                      "\u{2688} $description",
+                      "\u{2688} Item: $sweetName",
                       style: TextStyle(
-                          fontSize: 16.0, fontWeight: FontWeight.bold),
+                          fontSize: 12.0, fontWeight: FontWeight.bold),
                     ),
-                    SmallButton(btnText: "Processing"),
+                    SmallButton(btnText: "$status"),
                   ],
                 ),
               ),

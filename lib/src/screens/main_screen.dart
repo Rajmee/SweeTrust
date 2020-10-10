@@ -1,5 +1,6 @@
 // import 'package:firebase/firebase.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../src/pages/add_sweet_items.dart';
 import 'package:sweet_trust/src/pages/history_page.dart';
@@ -10,6 +11,9 @@ import '../pages/order_page.dart';
 import '../pages/explore_page.dart';
 import '../pages/profile_page.dart';
 import '../../src/pages/all_order_status.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class MainScreen extends StatefulWidget {
   final MainModel model;
@@ -33,6 +37,12 @@ class _MainScreenState extends State<MainScreen> {
 
   List<Widget> pages;
   Widget currentPage;
+  bool isStopped = false;
+  String phone;
+  String cartCount;
+
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+  final Firestore _db = Firestore.instance;
 
   @override
   void initState() {
@@ -41,8 +51,10 @@ class _MainScreenState extends State<MainScreen> {
     favoritePage = FavoritePage(model: widget.model);
     profilePage = ProfilePage();
     pages = [homePage, favoritePage, orderPage, profilePage];
-
+    _timer();
     currentPage = homePage;
+    _notificationHandle();
+    _saveDeviceToken();
     super.initState();
   }
 
@@ -85,7 +97,6 @@ class _MainScreenState extends State<MainScreen> {
             padding: EdgeInsets.zero,
             children: <Widget>[
               HeaderDrawer(),
-
               _createDrawerItem(
                   icon: Icons.history,
                   text: 'Your History',
@@ -105,18 +116,6 @@ class _MainScreenState extends State<MainScreen> {
                             AllOrderStatusPage()));
                     // Navigator.pushReplacementNamed(context, "/History");
                   }),
-
-              _createDrawerItem(
-                  icon: Icons.bookmark,
-                  text: 'Add sweet items',
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (BuildContext context) =>
-                            AddSweetItemsPage()));
-                    // Navigator.pushReplacementNamed(context, "/History");
-                  }),
-
               Expanded(
                 child: Align(
                   alignment: Alignment.bottomCenter,
@@ -130,18 +129,6 @@ class _MainScreenState extends State<MainScreen> {
                   ),
                 ),
               ),
-              // ListTile(
-              //   onTap: () {
-              //     Navigator.of(context).pop();
-              //     Navigator.of(context).push(MaterialPageRoute(
-              //         builder: (BuildContext context) => AddFoodItem()));
-              //   },
-              //   leading: Icon(Icons.list),
-              //   title: Text(
-              //     "Add food Item",
-              //     style: TextStyle(fontSize: 16.0),
-              //   ),
-              // )
             ],
           ),
         ),
@@ -172,7 +159,7 @@ class _MainScreenState extends State<MainScreen> {
               icon: Icon(
                 Icons.shopping_cart,
               ),
-              title: Text("Orders"),
+              title: Text("Carts"),
             ),
             BottomNavigationBarItem(
               icon: Icon(
@@ -184,6 +171,36 @@ class _MainScreenState extends State<MainScreen> {
         ),
         body: currentPage,
       ),
+    );
+  }
+
+  _notificationHandle() async {
+    _firebaseMessaging.configure(
+      onMessage: (Map<String, dynamic> message) async {
+        print("onMessage: $message");
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            content: ListTile(
+              title: Text(message['notification']['title']),
+              subtitle: Text(message['notification']['body']),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('Ok'),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          ),
+        );
+      },
+      // onBackgroundMessage: myBackgroundMessageHandler,
+      onLaunch: (Map<String, dynamic> message) async {
+        print("onLaunch: $message");
+      },
+      onResume: (Map<String, dynamic> message) async {
+        print("onResume: $message");
+      },
     );
   }
 
@@ -207,7 +224,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
             child: Center(
               child: Text(
-                "5",
+                "$cartCount",
                 style: TextStyle(
                   fontSize: 12.0,
                   color: Colors.white,
@@ -218,6 +235,62 @@ class _MainScreenState extends State<MainScreen> {
         ),
       ],
     );
+  }
+
+  _timer() {
+    Timer.periodic(Duration(seconds: 2), (timer) {
+      if (isStopped) {
+        timer.cancel();
+      }
+      getPhone();
+    });
+  }
+
+  getPhone() async {
+    var firebaseUser = await FirebaseAuth.instance.currentUser();
+    String getPhone = firebaseUser.phoneNumber;
+    setState(() {
+      phone = getPhone;
+    });
+    await _getItemcount();
+  }
+
+  _getItemcount() async {
+    final QuerySnapshot qSnap = await Firestore.instance
+        .collection('customerData')
+        .document(phone)
+        .collection('cartItems')
+        .getDocuments();
+    final int documents = qSnap.documents.length;
+
+    print(documents);
+
+    setState(() {
+      cartCount = documents.toString();
+    });
+  }
+
+  _saveDeviceToken() async {
+    var firebaseUser = await FirebaseAuth.instance.currentUser();
+
+    String getPhone = firebaseUser.phoneNumber;
+    print(getPhone);
+    String fcmToken = await _firebaseMessaging.getToken();
+    print(fcmToken);
+
+    if (fcmToken != null) {
+      var tokens = _db
+          .collection('logininfo')
+          .document(getPhone)
+          .collection('tokens')
+          .document(fcmToken);
+
+      await tokens.setData({
+        'token': fcmToken,
+        'createdAt': FieldValue.serverTimestamp(), // optional
+        // 'platform': Platform, // optional
+      });
+    }
   }
 
   Widget _createDrawerItem(

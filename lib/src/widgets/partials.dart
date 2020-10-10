@@ -27,8 +27,7 @@ Widget foodItem(
                 child: Hero(
                     transitionOnUserGestures: true,
                     tag: food.name,
-                    child: Image.network(
-                        "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcSNqc23hR0uCkmd5pq3ogL1A5_aKKXi7AMc3w&usqp=CAU",
+                    child: Image.network(food.imagePath,
                         width: (imgWidth != null) ? imgWidth : 100)))),
         // Positioned(
         //   bottom: () ? 10 : 70,

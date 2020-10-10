@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:sweet_trust/src/pages/sigin_page.dart';
+import 'package:sweet_trust/src/screens/car_main_screen.dart';
 import 'package:sweet_trust/src/screens/main_screen.dart';
 
 class AuthService {

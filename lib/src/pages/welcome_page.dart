@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:sweet_trust/src/carrier/carr_signin_page.dart';
 import 'package:sweet_trust/src/pages/sigin_page.dart';
 import 'package:sweet_trust/src/services/auth_service.dart';
+import '../../src/services/car_auth_service.dart';
+import '../../src/services/auth_service_car_signup.dart';
 import 'package:sweet_trust/src/widgets/welcome_page_buttons.dart';
-import '../../src/widgets/styles.dart';
 import '../../src/widgets/colors.dart';
 import '../../src/widgets/buttons.dart';
 
@@ -50,30 +51,35 @@ class _WelcomePageState extends State<WelcomePage> {
             padding: EdgeInsets.all(0),
             child: sweetOutlineBtn('As a Carrier', () {
               Navigator.pushReplacement(
-                  context,
-                  PageTransition(
-                      type: PageTransitionType.rightToLeftWithFade,
-                      duration: Duration(seconds: 2),
-                      child: CarSignInPage()));
+                context,
+                PageTransition(
+                    type: PageTransitionType.rightToLeftWithFade,
+                    duration: Duration(seconds: 2),
+                    child: CarAuthService().handleAuth()),
+              );
               // Navigator.of(context).pushReplacementNamed('/signup');
             }),
           ),
-          Container(
-            margin: EdgeInsets.only(top: 25),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Text('Langauage:', style: TextStyle(color: darkText)),
-                Container(
-                  margin: EdgeInsets.only(left: 6),
-                  child: Text('English ›',
-                      style: TextStyle(
-                          color: Colors.black, fontWeight: FontWeight.w500)),
-                )
-              ],
-            ),
-          )
+          // Container(
+          //   margin: EdgeInsets.only(top: 25),
+          //   child: Row(
+          //     mainAxisAlignment: MainAxisAlignment.center,
+          //     crossAxisAlignment: CrossAxisAlignment.center,
+          //     children: <Widget>[
+          //       Container(
+          //         margin: EdgeInsets.only(left: 6),
+          //         child: Text(
+          //             'A new innovation for delivery system' +
+          //                 '\n' +
+          //                 '   For trustable customer and carrier',
+          //             style: TextStyle(
+          //                 color: darkText,
+          //                 fontWeight: FontWeight.w500,
+          //                 fontSize: 15.0)),
+          //       )
+          //     ],
+          //   ),
+          // )
         ],
       )),
       backgroundColor: bgColor,

@@ -2,9 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:sweet_trust/src/enums/auth_mode.dart';
-import 'package:sweet_trust/src/models/carrier_model.dart';
 import 'package:sweet_trust/src/models/user_model.dart';
+import 'package:sweet_trust/src/scoped-model/carrier_model.dart';
 import 'package:sweet_trust/src/scoped-model/main_model.dart';
+import 'package:sweet_trust/src/scoped-model/user_model.dart';
 import 'package:sweet_trust/src/services/auth_service_car_signup.dart';
 import 'package:sweet_trust/src/services/auth_service_signup.dart';
 import 'package:sweet_trust/src/widgets/button_google.dart';
@@ -14,13 +15,12 @@ import 'package:sweet_trust/src/widgets/divider.dart';
 import 'package:sweet_trust/src/widgets/sweet_trust_title.dart';
 import 'package:sweet_trust/src/utils/responsive_builder.dart';
 import 'package:sweet_trust/src/widgets/login_account_label.dart';
+import 'package:sweet_trust/src/loader/color_loader.dart';
 import 'package:scoped_model/scoped_model.dart';
-import '../../src/scoped-model/carrier_model.dart';
-
-import '../../src/carrier/carr_signin_page.dart';
+import 'package:http/http.dart' as http;
 
 class CarSignUpPage extends StatefulWidget {
-  final CarUser user;
+  final User user;
   CarSignUpPage({Key key, this.user}) : super(key: key);
   @override
   _CarSignUpPageState createState() => _CarSignUpPageState();
@@ -39,7 +39,11 @@ class _CarSignUpPageState extends State<CarSignUpPage> {
   String countryCode = "+88";
   String verify = "Verifying";
 
+  CarrierModel _carrierModel;
+
   bool codeSent = false;
+  bool loading = false;
+  bool isbuttonChnage = false;
 
   String defaultFontFamily = 'Roboto-Light.ttf';
   double defaultFontSize = 14;
@@ -103,13 +107,6 @@ class _CarSignUpPageState extends State<CarSignUpPage> {
             onChanged: (val) => _phone = countryCode + val,
           ),
           _entryField(
-            "NID",
-            "nid number",
-            validator: (val) =>
-                val.length < 11 ? 'Enter a valid nid number' : null,
-            onChanged: (val) => _nid = val,
-          ),
-          _entryField(
             "Password",
             "password",
             validator: (val) => val.length < 6
@@ -165,74 +162,132 @@ class _CarSignUpPageState extends State<CarSignUpPage> {
   Widget build(BuildContext context) {
     return SafeArea(child: ResponsiveBuilder(
       builder: (context, sizingInformation) {
-        return Scaffold(body: LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints viewportConstraints) {
-            return SingleChildScrollView(
-              physics: AlwaysScrollableScrollPhysics(),
-              child: Container(
-                height: sizingInformation.screenSize.height,
-                child: ConstrainedBox(
-                  constraints:
-                      BoxConstraints(minHeight: viewportConstraints.maxHeight),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 20),
-                        child: Column(
-                          children: <Widget>[
-                            SweetTrust("Sign Up"),
-                            SizedBox(
-                              height: 15,
-                            ),
-                            _signUpFormWidget(),
-                            SizedBox(
-                              height: 15,
-                            ),
-                            codeSent
-                                ? _buildOTPTextField()
-                                : SizedBox(
-                                    height: 20,
-                                  ),
-                            ScopedModelDescendant(
-                              builder: (BuildContext context, Widget child,
-                                  MainModel model) {
-                                return ButtonSubmit(
-                                  title: codeSent ? 'Verify' : 'Sign up',
-                                  onTap: () {
-                                    codeSent
-                                        ? AuthServiceCarSignUp().signUpWithOTP(
-                                            smsCode, verificationId)
-                                        : verifyPhone(_phone, model.addCarUser);
-                                    // setState(() {
-                                    //   loading = true;
-                                    // });
+        return Scaffold(
+            key: _scaffoldKey,
+            body: LayoutBuilder(
+              builder:
+                  (BuildContext context, BoxConstraints viewportConstraints) {
+                return SingleChildScrollView(
+                  physics: AlwaysScrollableScrollPhysics(),
+                  child: Container(
+                    // height: sizingInformation.screenSize.height,
+                    height: 800,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                          minHeight: viewportConstraints.maxHeight),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 20),
+                            child: Column(
+                              children: <Widget>[
+                                SweetTrust("Sign Up"),
+                                SizedBox(
+                                  height: 15,
+                                ),
+                                _signUpFormWidget(),
+                                SizedBox(
+                                  height: 15,
+                                ),
+                                codeSent
+                                    ? _buildOTPTextField()
+                                    : SizedBox(
+                                        height: 20,
+                                      ),
+                                ScopedModelDescendant(
+                                  builder: (BuildContext context, Widget child,
+                                      MainModel model) {
+                                    return ButtonSubmit(
+                                      title: codeSent ? 'Verify' : 'Sign up',
+                                      // title: 'Sign Up',
+                                      onTap: () async {
+                                        if (_formKey.currentState.validate()) {
+                                          _formKey.currentState.save();
+                                          if (isbuttonChnage == false) {
+                                            final CarrierModel carrierData =
+                                                await createUser(_username,
+                                                    _phone, _password);
+                                            setState(() {
+                                              _carrierModel = carrierData;
+                                            });
+                                          } else {
+                                            codeSent
+                                                ? AuthServiceCarSignUp()
+                                                    .signUpWithOTP(
+                                                        smsCode, verificationId)
+                                                : verifyPhone(_phone);
+                                          }
+                                        } else {
+                                          Scaffold.of(context).showSnackBar(
+                                              SnackBar(
+                                                  content: Text(
+                                                    "Cannot Create An Account",
+                                                    style: TextStyle(
+                                                        color: Colors.red),
+                                                  ),
+                                                  duration:
+                                                      Duration(seconds: 3)));
+                                        }
+                                      },
+                                    );
                                   },
-                                );
-                              },
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                LoginAccountLabel(),
+                              ],
                             ),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            LoginAccountLabel(),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-            );
-          },
-        ));
+                );
+              },
+            ));
       },
     ));
   }
 
-  Future<void> verifyPhone(_phone, Function addCarUser) async {
+  Future<CarrierModel> createUser(
+      String name, String phone, String password) async {
+    final response = await http.post("http://192.168.0.100:3000/signUp", body: {
+      "user": name,
+      "password": password,
+      "phn": phone,
+      "type": "carrier"
+    });
+
+    if (response.statusCode == 200) {
+      final String responseString = response.body;
+
+      if (responseString == "OK") {
+        print("Not match");
+        print(responseString);
+        codeSent
+            ? AuthServiceCarSignUp().signUpWithOTP(smsCode, verificationId)
+            : verifyPhone(_phone);
+        setState(() {
+          isbuttonChnage = true;
+        });
+      } else {
+        print("Match");
+        print(responseString);
+        _notifyAlert();
+      }
+
+      // return customerModelFromJson(responseString);
+    } else {
+      return null;
+    }
+  }
+
+  Future<void> verifyPhone(_phone) async {
     final PhoneVerificationCompleted verified = (AuthCredential authResult) {
-      AuthServiceSignUp().signUp(authResult);
+      AuthServiceCarSignUp().signUp(authResult);
     };
 
     final PhoneVerificationFailed verificationfailed =
@@ -244,21 +299,6 @@ class _CarSignUpPageState extends State<CarSignUpPage> {
       this.verificationId = verId;
       setState(() {
         this.codeSent = true;
-
-        if (_formKey.currentState.validate()) {
-          _formKey.currentState.save();
-
-          if (widget.user == null) {
-            // I wnat to add new Item
-            final CarUser user = CarUser(
-              username: _username,
-              phone: _phone,
-              password: _password,
-              userType: _userType,
-            );
-            addCarUser(user);
-          }
-        }
       });
     };
 
@@ -275,29 +315,9 @@ class _CarSignUpPageState extends State<CarSignUpPage> {
         codeAutoRetrievalTimeout: autoTimeout);
   }
 
-  // void onSubmit(Function addUser) async {
-  //   if (_formKey.currentState.validate()) {
-  //     _formKey.currentState.save();
-
-  //     if (widget.user == null) {
-  //       // I wnat to add new Item
-  //       final User user = User(
-  //         username: _username,
-  //         phone: _phone,
-  //         password: _password,
-  //         userType: _userType,
-  //       );
-  //       bool value = await addUser(user);
-  //       if (value) {
-  //         Navigator.of(context).pop();
-  //         SnackBar snackBar = SnackBar(content: Text("Successfully signup"));
-  //         _scaffoldKey.currentState.showSnackBar(snackBar);
-  //       } else if (!value) {
-  //         Navigator.of(context).pop();
-  //         SnackBar snackBar = SnackBar(content: Text("Try again!"));
-  //         _scaffoldKey.currentState.showSnackBar(snackBar);
-  //       }
-  //     }
-  //   }
-  // }
+  _notifyAlert() async {
+    // Navigator.of(context).pop();
+    SnackBar snackBar = SnackBar(content: Text("Account already exists !"));
+    _scaffoldKey.currentState.showSnackBar(snackBar);
+  }
 }

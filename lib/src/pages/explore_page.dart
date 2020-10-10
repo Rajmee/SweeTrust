@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:sweet_trust/src/admin/pages/add_food_item.dart';
 import 'package:sweet_trust/src/models/food_model.dart';
+import 'package:sweet_trust/src/pages/ProductPage.dart';
+import 'package:sweet_trust/src/pages/expected_time_page.dart';
 import 'package:sweet_trust/src/scoped-model/main_model.dart';
 import 'package:sweet_trust/src/widgets/food_item_card.dart';
 import 'package:sweet_trust/src/widgets/show_dailog.dart';
@@ -46,25 +49,30 @@ class _FavoritePageState extends State<FavoritePage> {
                 itemBuilder: (BuildContext lctx, int index) {
                   return GestureDetector(
                     onTap: () async {
-                      final bool response =
-                          await Navigator.of(context).push(MaterialPageRoute(
-                              builder: (BuildContext context) => AddFoodItem(
-                                    food: model.foods[index],
-                                  )));
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (BuildContext context) => new ProductPage(
+                          food: model.foods[index],
+                        ),
+                      ));
+                      // final bool response =
+                      //     await Navigator.of(context).push(MaterialPageRoute(
+                      //         builder: (BuildContext context) => AddFoodItem(
+                      //               food: model.foods[index],
+                      //             )));
 
-                      if (response) {
-                        SnackBar snackBar = SnackBar(
-                          duration: Duration(seconds: 2),
-                          backgroundColor: Theme.of(context).primaryColor,
-                          content: Text(
-                            "Food item successfully updated.",
-                            style:
-                                TextStyle(color: Colors.white, fontSize: 16.0),
-                          ),
-                        );
-                        _explorePageScaffoldKey.currentState
-                            .showSnackBar(snackBar);
-                      }
+                      // if (response) {
+                      //   SnackBar snackBar = SnackBar(
+                      //     duration: Duration(seconds: 2),
+                      //     backgroundColor: Theme.of(context).primaryColor,
+                      //     content: Text(
+                      //       "Food item successfully updated.",
+                      //       style:
+                      //           TextStyle(color: Colors.white, fontSize: 16.0),
+                      //     ),
+                      //   );
+                      //   _explorePageScaffoldKey.currentState
+                      //       .showSnackBar(snackBar);
+                      // }
                     },
                     onDoubleTap: () {
                       // delete food item
@@ -78,7 +86,12 @@ class _FavoritePageState extends State<FavoritePage> {
                     child: FoodItemCard(
                       model.foods[index].name,
                       model.foods[index].description,
+                      // model.foods[index].imagePath,
                       model.foods[index].price.toString(),
+                      model.foods[index].imagePath,
+                      model.foods[index].area,
+                      model.foods[index].lat,
+                      model.foods[index].lng,
                     ),
                   );
                 },
@@ -89,6 +102,13 @@ class _FavoritePageState extends State<FavoritePage> {
       ),
     );
   }
+
+  // navigateToDetail(Food food) {
+  //   Navigator.of(context).push(MaterialPageRoute(
+  //       builder: (BuildContext context) => ExpectedTimeDatePage(
+  //             food: food,
+  //           )));
+  // }
 }
 
 // Container(

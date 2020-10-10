@@ -5,8 +5,12 @@ class FoodItemCard extends StatelessWidget {
   final String title;
   final String description;
   final String price;
-
-  FoodItemCard(this.title, this.description, this.price);
+  final String imgUrl;
+  final String area;
+  final String lat;
+  final String lng;
+  FoodItemCard(this.title, this.description, this.price, this.imgUrl, this.area,
+      this.lat, this.lng);
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +18,7 @@ class FoodItemCard extends StatelessWidget {
       margin: EdgeInsets.symmetric(vertical: 10.0),
       padding: EdgeInsets.all(10.0),
       width: MediaQuery.of(context).size.width,
-      height: 125.0,
+      height: 145.0,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10.0),
@@ -32,7 +36,8 @@ class FoodItemCard extends StatelessWidget {
             height: 90.0,
             decoration: BoxDecoration(
                 image: DecorationImage(
-                    image: AssetImage("assets/images/breakfast.jpeg"),
+                    // image: AssetImage("assets/images/jamtola.jpg"),
+                    image: NetworkImage("$imgUrl"),
                     fit: BoxFit.cover),
                 borderRadius: BorderRadius.circular(10.0)),
           ),
@@ -43,6 +48,13 @@ class FoodItemCard extends StatelessWidget {
               Text(
                 "$title",
                 style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(
+                height: 10.0,
+              ),
+              Container(
+                width: 200.0,
+                child: Text("$area"),
               ),
               SizedBox(
                 height: 10.0,

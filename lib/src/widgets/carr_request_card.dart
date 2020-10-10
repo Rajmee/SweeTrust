@@ -4,19 +4,25 @@ import 'package:page_transition/page_transition.dart';
 import 'package:sweet_trust/src/carrier/carr_tracker_map_page.dart';
 import 'package:sweet_trust/src/widgets/divider.dart';
 import 'package:sweet_trust/src/widgets/process_handler.dart';
+import 'package:sweet_trust/src/widgets/process_handler.dart';
 
 import 'car_req_button.dart';
 
 class CarReqItemCard extends StatelessWidget {
   final String toDelivered;
-  final String customerName;
-  String customerNumber;
+  final String customerPhn;
   final String productName;
-  final String productunit;
+  final String productQuantity;
   final String price;
+  final String status;
 
-  CarReqItemCard(this.toDelivered, this.customerName, this.productName,
-      this.productunit, this.price);
+  CarReqItemCard(
+      {this.toDelivered,
+      this.customerPhn,
+      this.productName,
+      this.productQuantity,
+      this.price,
+      this.status});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +30,7 @@ class CarReqItemCard extends StatelessWidget {
       margin: EdgeInsets.symmetric(vertical: 10.0),
       padding: EdgeInsets.all(10.0),
       width: MediaQuery.of(context).size.width * 0.95,
-      height: 300.0,
+      height: 195.0,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10.0),
@@ -36,13 +42,6 @@ class CarReqItemCard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
-          // Container(
-          //   margin: EdgeInsets.only(right: 10.0),
-          //   width: 140.0,
-          //   height: 90.0,
-          //   decoration:
-          //       BoxDecoration(borderRadius: BorderRadius.circular(10.0)),
-          // ),
           Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,13 +80,19 @@ class CarReqItemCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Padding(
-                            padding: EdgeInsets.only(top: 10.0),
+                            padding: EdgeInsets.only(top: 10.0, right: 50.0),
                             child: Text(
                               "Delivery to",
                               style: TextStyle(
                                   fontSize: 15.0, fontWeight: FontWeight.bold),
                             ),
-                          )
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(
+                              top: 5.0,
+                            ),
+                            child: SmallButton(btnText: "$status"),
+                          ),
                         ],
                       ),
                       Row(
@@ -95,13 +100,14 @@ class CarReqItemCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Padding(
-                            padding: EdgeInsets.only(left: 18.0, top: 2.0),
+                            padding: EdgeInsets.only(
+                                left: 0.0, top: 2.0, right: 140.0),
                             child: Text(
                               toDelivered,
                               style: TextStyle(
-                                  fontSize: 30.0, fontWeight: FontWeight.bold),
+                                  fontSize: 25.0, fontWeight: FontWeight.bold),
                             ),
-                          )
+                          ),
                         ],
                       ),
                     ],
@@ -145,22 +151,13 @@ class CarReqItemCard extends StatelessWidget {
                           Padding(
                             padding: EdgeInsets.only(left: 10.0, top: 5.0),
                             child: Text(
-                              customerName,
+                              customerPhn,
                               style: TextStyle(
                                   fontSize: 12.0, fontWeight: FontWeight.bold),
                             ),
-                          )
-                        ],
-                      ),
-                      SizedBox(
-                        height: 10.0,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
+                          ),
                           Padding(
-                            padding: EdgeInsets.only(left: 13.0),
+                            padding: EdgeInsets.only(left: 18.0),
                             child: Image.asset(
                               'assets/icons/item.png',
                               height: 20.0,
@@ -195,22 +192,13 @@ class CarReqItemCard extends StatelessWidget {
                           Padding(
                             padding: EdgeInsets.only(left: 10.0, top: 5.0),
                             child: Text(
-                              "$productunit kg",
+                              "$productQuantity kg",
                               style: TextStyle(
                                   fontSize: 12.0, fontWeight: FontWeight.bold),
                             ),
-                          )
-                        ],
-                      ),
-                      SizedBox(
-                        height: 10.0,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
+                          ),
                           Padding(
-                            padding: EdgeInsets.only(left: 13.0),
+                            padding: EdgeInsets.only(left: 91.0),
                             child: Image.asset(
                               'assets/icons/tk.png',
                               height: 20.0,
@@ -220,12 +208,15 @@ class CarReqItemCard extends StatelessWidget {
                           Padding(
                             padding: EdgeInsets.only(left: 10.0, top: 5.0),
                             child: Text(
-                              "$price/kg",
+                              "$price \u{09F3}",
                               style: TextStyle(
                                   fontSize: 12.0, fontWeight: FontWeight.bold),
                             ),
-                          )
+                          ),
                         ],
+                      ),
+                      SizedBox(
+                        height: 10.0,
                       ),
                     ],
                   ),
@@ -236,39 +227,6 @@ class CarReqItemCard extends StatelessWidget {
               ),
               SizedBox(
                 height: 10.0,
-              ),
-              Container(
-                // padding: EdgeInsets.only(right: 20),
-                width: 330,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Padding(
-                      padding: EdgeInsets.only(left: 25.0),
-                      child: Container(
-                        width: 140,
-                        child: rejectBtn('Cancel', () {}),
-                      ),
-                    ),
-                    Container(
-                      padding: EdgeInsets.only(left: 5),
-                      width: 150,
-                      child: acceptBtn('Accept', () {
-                        Navigator.of(context).pop();
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (BuildContext context) => CarMainScreen(
-                                  addres: toDelivered,
-                                )));
-                        // Navigator.pushReplacement(
-                        //     context,
-                        //     PageTransition(
-                        //         type: PageTransitionType.leftToRightWithFade,
-                        //         duration: Duration(seconds: 1),
-                        //         child: CarTrackerMapPage()));
-                      }),
-                    ),
-                  ],
-                ),
               ),
             ],
           ),

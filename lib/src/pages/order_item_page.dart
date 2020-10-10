@@ -1,20 +1,47 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:sweet_trust/src/pages/map_tracker_page.dart';
-import 'package:sweet_trust/src/pages/sigin_page.dart';
-import 'package:sweet_trust/src/pages/success_page.dart';
 import '../../src/pages/pickup_location_page.dart';
 import '../../src/widgets/colors.dart';
 import '../widgets/order_card.dart';
 import '../../src/widgets/styles.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../src/pages/success_page.dart';
+import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http;
 import 'dart:math';
 
 class OrderItemPage extends StatefulWidget {
-  final DocumentSnapshot post;
+  // final DocumentSnapshot post;
 
-  OrderItemPage({this.post});
+  final String swtName;
+  final String quantity;
+  final String price;
+  final String cartNum;
+  final String area;
+  final String lat;
+  final String lng;
+  final String currenLocality;
+  final String timeDate;
+  final String imgurl;
+  final String expectedTimeDate;
+  var currentLat;
+  var currentLng;
+
+  OrderItemPage(
+      {this.swtName,
+      this.quantity,
+      this.price,
+      this.cartNum,
+      this.area,
+      this.lat,
+      this.lng,
+      this.currenLocality,
+      this.timeDate,
+      this.imgurl,
+      this.expectedTimeDate,
+      this.currentLat,
+      this.currentLng});
 
   @override
   _OrderItemPageState createState() => _OrderItemPageState();
@@ -22,35 +49,52 @@ class OrderItemPage extends StatefulWidget {
 
 class _OrderItemPageState extends State<OrderItemPage> {
   final firestoreInstance = Firestore.instance;
+
+  String deliveryCharge = "200.0";
+  String totalSweetPrice;
   String phone;
-  String swtName;
-  String quantity;
-  String price;
-  String orderNum;
+  // String deviceToken;
+  var currentlat;
+  var currentlng;
+  var plat;
+  var plng;
+
   var _quantiiy;
   var discount = 20;
   var total;
   var tempPrice;
+  var _deliveryCharge;
+  var totalPrice;
+
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
     getPhone();
+    // _getToken();
   }
 
   @override
   Widget build(BuildContext context) {
-    swtName = widget.post.data["sweetName"];
-    quantity = widget.post.data["quantity"];
-    price = widget.post.data["price"];
-    orderNum = widget.post.data["orderNumber"];
-
-    tempPrice = double.parse(price);
-    _quantiiy = int.parse(quantity);
-    total = (tempPrice - discount) * _quantiiy;
+    tempPrice = double.parse(widget.price);
+    _deliveryCharge = double.parse(deliveryCharge);
+    _quantiiy = int.parse(widget.quantity);
+    totalPrice = tempPrice * _quantiiy;
+    total = (tempPrice * _quantiiy);
+    totalSweetPrice = total.toString();
     // total = to + charge;
 
+    setState(() {
+      currentlat = widget.currentLat;
+      currentlng = widget.currentLng;
+
+      plat = widget.lat;
+      plng = widget.lng;
+    });
+
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
@@ -69,7 +113,8 @@ class _OrderItemPageState extends State<OrderItemPage> {
         padding: EdgeInsets.symmetric(horizontal: 10.0),
         scrollDirection: Axis.vertical,
         children: <Widget>[
-          OrderCard("$swtName", "$quantity", "$price", "$orderNum"),
+          OrderCard(widget.swtName, widget.quantity, widget.price,
+              widget.cartNum, widget.imgurl),
         ],
       ),
       bottomNavigationBar: _buildTotalContainer(),
@@ -97,30 +142,7 @@ class _OrderItemPageState extends State<OrderItemPage> {
                     fontWeight: FontWeight.bold),
               ),
               Text(
-                "\u{09F3} $price",
-                style: TextStyle(
-                    color: Color(0xFF6C6D6D),
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          SizedBox(
-            height: 10.0,
-          ),
-          Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Text(
-                "Discount",
-                style: TextStyle(
-                    color: Color(0xFF9BA7C6),
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.bold),
-              ),
-              Text(
-                "\u{09F3} $discount",
+                "\u{09F3} $totalPrice",
                 style: TextStyle(
                     color: Color(0xFF6C6D6D),
                     fontSize: 16.0,
@@ -154,6 +176,29 @@ class _OrderItemPageState extends State<OrderItemPage> {
           SizedBox(
             height: 10.0,
           ),
+          Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Text(
+                "Deivery charge",
+                style: TextStyle(
+                    color: Color(0xFF9BA7C6),
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold),
+              ),
+              Text(
+                "Offer by carrier",
+                style: TextStyle(
+                    color: Color(0xFF6C6D6D),
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          SizedBox(
+            height: 10.0,
+          ),
           Divider(
             height: 2.0,
           ),
@@ -172,7 +217,7 @@ class _OrderItemPageState extends State<OrderItemPage> {
                     fontWeight: FontWeight.bold),
               ),
               Text(
-                "\u{09F3} $total",
+                "\u{09F3} $totalSweetPrice",
                 style: TextStyle(
                     color: Color(0xFF6C6D6D),
                     fontSize: 16.0,
@@ -184,13 +229,10 @@ class _OrderItemPageState extends State<OrderItemPage> {
             height: 20.0,
           ),
           GestureDetector(
-            onTap: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (BuildContext context) => PickupLocationPage(
-                        orderNumber: orderNum,
-                      )));
-              addOnProcessOrder();
+            onTap: () async {
+              // _getToken();
+              _setOngoingOrder();
+              await _gosuccessPage();
             },
             child: Container(
               height: 50.0,
@@ -218,6 +260,91 @@ class _OrderItemPageState extends State<OrderItemPage> {
     );
   }
 
+  _gosuccessPage() async {
+    try {
+      Navigator.of(context).pop();
+      Navigator.of(context).push(
+          MaterialPageRoute(builder: (BuildContext context) => SuccessPage()));
+
+      // await _setOngoingOrder();
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  // _getToken() async {
+  //   var firebaseUser = await FirebaseAuth.instance.currentUser();
+
+  //   var phone = firebaseUser.phoneNumber;
+
+  //   firestoreInstance
+  //       .collection('logininfo')
+  //       .getDocuments()
+  //       .then((querySnapshot) {
+  //     querySnapshot.documents.forEach((result) {
+  //       firestoreInstance
+  //           .collection("logininfo")
+  //           .document(phone)
+  //           .collection('tokens')
+  //           .getDocuments()
+  //           .then((querySnapshot) {
+  //         querySnapshot.documents.forEach((result) {
+  //           // print(result.data);
+  //           setState(() {
+  //             deviceToken = result.data["token"];
+  //           });
+  //           print(deviceToken);
+  //         });
+  //       });
+  //     });
+  //   });
+  // }
+
+  _setOngoingOrder() async {
+    var firebaseUser = await FirebaseAuth.instance.currentUser();
+
+    var phone = firebaseUser.phoneNumber;
+
+    final response =
+        await http.post("http://192.168.0.100:3000/placeOrder", body: {
+      "phn": phone,
+      "notes": widget.swtName,
+      "quantity": widget.quantity,
+      "price": "$totalPrice",
+      "deliveryCharge": "",
+      "areaName": widget.currenLocality,
+      "location": "$currentlat" + "," + "$currentlng",
+      "pickupCoordinates": "$plat" + "," + "$plng",
+      "expectedTime": widget.expectedTimeDate
+    });
+
+    firestoreInstance
+        .collection('customerData')
+        .document(firebaseUser.phoneNumber)
+        .collection('cartItems')
+        .document(widget.cartNum)
+        .delete()
+        .then((_) {
+      print("success");
+    });
+
+    if (response.statusCode == 200) {
+      final String responseString = response.body;
+
+      if (responseString == "OK") {
+        print("Match");
+        print(responseString);
+      }
+
+      // return customerModelFromJson(responseString);
+    } else {
+      print("Not Match");
+      _notifyAlert("Order placed !!!");
+
+      return null;
+    }
+  }
+
   getPhone() async {
     var firebaseUser = await FirebaseAuth.instance.currentUser();
 
@@ -228,32 +355,38 @@ class _OrderItemPageState extends State<OrderItemPage> {
     });
   }
 
-  addOnProcessOrder() async {
-    var firebaseUser = await FirebaseAuth.instance.currentUser();
-
-    var phone = firebaseUser.phoneNumber;
-
-    firestoreInstance.collection('onprocessOrders').document(orderNum).setData({
-      "orderNumber": "$orderNum",
-      "sweetName": "$swtName",
-      "quantity": "$quantity",
-      "cusPhone": "$phone",
-      "price": "$price",
-      "totalprice": "$total",
-      "pickupLatLocation": "null",
-      "pickupLngLocation": "null",
-      "pickupAddress": "null",
-      "request": "false",
-      "productlocation": "null",
-      "expectedDeliveryTime": "null",
-      "status": "null",
-      "carrierName": "null",
-      "carrierLocation": "null",
-      "orderStatus1": "false",
-      "orderStatus2": "false",
-      "orderStatus3": "false",
-      "orderStatus4": "false",
-      "orderStatus5": "false",
-    });
+  _notifyAlert(String msg) async {
+    // Navigator.of(context).pop();
+    SnackBar snackBar = SnackBar(content: Text(msg));
+    _scaffoldKey.currentState.showSnackBar(snackBar);
   }
+
+  // addOnProcessOrder() async {
+  //   var firebaseUser = await FirebaseAuth.instance.currentUser();
+
+  //   var phone = firebaseUser.phoneNumber;
+
+  // firestoreInstance.collection('onprocessOrders').document(cartNum).setData({
+  //   "orderNumber": "$cartNum",
+  //   "sweetName": "$swtName",
+  //   "quantity": "$quantity",
+  //   "cusPhone": "$phone",
+  //   "price": "$price",
+  //   "totalprice": "$total",
+  //   "pickupLatLocation": "null",
+  //   "pickupLngLocation": "null",
+  //   "pickupAddress": "null",
+  //   "request": "false",
+  //   "productlocation": "null",
+  //   "expectedDeliveryTime": "null",
+  //   "status": "null",
+  //   "carrierName": "null",
+  //   "carrierLocation": "null",
+  //   "orderStatus1": "false",
+  //   "orderStatus2": "false",
+  //   "orderStatus3": "false",
+  //   "orderStatus4": "false",
+  //   "orderStatus5": "false",
+  // });
+  // }
 }

@@ -7,12 +7,22 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import '../../src/pages/success_page.dart';
-import '../../src/widgets/show_dailog.dart';
+import 'package:http/http.dart' as http;
+import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:math' show cos, sqrt, asin;
 
 class PickupLocationPage extends StatefulWidget {
-  final String orderNumber;
-  PickupLocationPage({this.orderNumber});
+  final String cartNumber;
+  final String sweetName;
+  final String sweettotalPrice;
+  final String deleveryCharge;
+  final String sweetQuantity;
+  PickupLocationPage(
+      {this.cartNumber,
+      this.sweetName,
+      this.sweettotalPrice,
+      this.sweetQuantity,
+      this.deleveryCharge});
   @override
   _PickupLocationPageState createState() => _PickupLocationPageState();
 }
@@ -33,12 +43,16 @@ class _PickupLocationPageState extends State<PickupLocationPage> {
   var _pickupLatPosition;
   var _pickupLngPosition;
 
+  var _currentLatPosition;
+  var _currentLngPosition;
+
   bool address = false;
   bool _isButtonDisable;
 
   String _currentAddress;
   String _pickupAddress;
   String timeandDate;
+  String areaName;
 
   DateTime selectedDateTime = DateTime.now();
 
@@ -51,7 +65,6 @@ class _PickupLocationPageState extends State<PickupLocationPage> {
   String _startAddress = '';
 
   // String _destinationAddress = '${add}';
-  String _placeDistance;
 
   Set<Marker> markers;
 
@@ -136,6 +149,8 @@ class _PickupLocationPageState extends State<PickupLocationPage> {
         .then((Position position) async {
       setState(() {
         _currentPosition = position;
+        _currentLatPosition = position.latitude;
+        _currentLngPosition = position.longitude;
         print('CURRENT POS: $_currentPosition');
         mapController.animateCamera(
           CameraUpdate.newCameraPosition(
@@ -204,6 +219,8 @@ class _PickupLocationPageState extends State<PickupLocationPage> {
         _pickupAddress =
             "${place.name}, ${place.locality}, ${place.postalCode}, ${place.country}";
         pickupAddressController.text = _pickupAddress;
+
+        areaName = "${place.locality}";
 
         print(_pickupAddress);
       });
@@ -330,13 +347,13 @@ class _PickupLocationPageState extends State<PickupLocationPage> {
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
                           Text(
-                            'Set pickup point',
+                            'From where',
                             style: TextStyle(fontSize: 20.0),
                           ),
                           SizedBox(height: 10),
                           _textField(
-                              label: 'Pickup Address',
-                              hint: 'Pickup point',
+                              label: 'Product Address',
+                              hint: 'Product point',
                               // initialValue: _pickupAddress == null
                               //     ? _currentAddress
                               //     : _pickupAddress,
@@ -429,12 +446,12 @@ class _PickupLocationPageState extends State<PickupLocationPage> {
                                     final selectedDate =
                                         await _selecteDateTime(context);
                                     if (selectedDate == null) {
-                                      _showToast("No date selected");
+                                      _notifyAlert("No date selected");
                                     }
                                     final selectedTime =
                                         await _selectTime(context);
                                     if (selectedTime == null) {
-                                      _showToast("No time selected");
+                                      _notifyAlert("No time selected");
                                     }
 
                                     setState(() {
@@ -446,12 +463,6 @@ class _PickupLocationPageState extends State<PickupLocationPage> {
                                           selectedTime.minute);
                                     });
                                     await _gosuccessPage();
-
-                                    // Navigator.of(context).pop();
-                                    // Navigator.of(context).push(
-                                    //     MaterialPageRoute(
-                                    //         builder: (BuildContext context) =>
-                                    //             SuccessPage()));
                                   }
                                 : null,
                             color: Colors.blue,
@@ -462,8 +473,9 @@ class _PickupLocationPageState extends State<PickupLocationPage> {
                               padding: const EdgeInsets.all(8.0),
                               child: Text(
                                 _isButtonDisable
-                                    ? "Set pickup & delivery time".toUpperCase()
-                                    : 'hold on...'.toUpperCase(),
+                                    ? "Set address & delivery time"
+                                        .toUpperCase()
+                                    : 'Pick point'.toUpperCase(),
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 12.0,
@@ -511,24 +523,67 @@ class _PickupLocationPageState extends State<PickupLocationPage> {
     }
   }
 
+  // _setPickupDateTime() async {
+  //   timeandDate = dateTime.format(selectedDateTime);
+  //   firestoreInstance
+  //       .collection('onprocessOrders')
+  //       .document(widget.orderNumber)
+  //       .updateData({
+  //     "pickupLatLocation": "$_pickupLatPosition",
+  //     "pickupLngLocation": "$_pickupLngPosition",
+  //     "pickupAddress": "$_pickupAddress",
+  //     "expectedDeliveryTime": "$timeandDate"
+  //   });
+  // }
+
   _setPickupDateTime() async {
     timeandDate = dateTime.format(selectedDateTime);
-    firestoreInstance
-        .collection('onprocessOrders')
-        .document(widget.orderNumber)
-        .updateData({
-      "pickupLatLocation": "$_pickupLatPosition",
-      "pickupLngLocation": "$_pickupLngPosition",
-      "pickupAddress": "$_pickupAddress",
-      "expectedDeliveryTime": "$timeandDate"
+    var firebaseUser = await FirebaseAuth.instance.currentUser();
+
+    var phone = firebaseUser.phoneNumber;
+
+    final response =
+        await http.post("http://192.168.0.100:3000/placeOrder", body: {
+      "phn": phone,
+      "notes": widget.sweetName,
+      "quantity": widget.sweetQuantity,
+      "price": widget.sweettotalPrice,
+      "deliveryCharge": widget.deleveryCharge,
+      "areaName": "$areaName",
+      "location": "$_currentLatPosition" + "," + "$_currentLngPosition",
+      "pickupCoordinates": "$_pickupLatPosition" + "," + "$_pickupLngPosition",
+      "expectedTime": "$timeandDate",
     });
+
+    firestoreInstance
+        .collection('customerData')
+        .document(firebaseUser.phoneNumber)
+        .collection('cartItems')
+        .document(widget.cartNumber)
+        .delete()
+        .then((_) {
+      print("success");
+    });
+
+    if (response.statusCode == 200) {
+      final String responseString = response.body;
+
+      if (responseString == "OK") {
+        print("Match");
+        print(responseString);
+      }
+
+      // return customerModelFromJson(responseString);
+    } else {
+      print("Not Match");
+      _notifyAlert("Order placed !!!");
+      return null;
+    }
   }
 
-  _showToast(String alert) async {
-    Fluttertoast.showToast(
-        msg: "$alert",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.CENTER,
-        timeInSecForIosWeb: 1);
+  _notifyAlert(String msg) async {
+    // Navigator.of(context).pop();
+    SnackBar snackBar = SnackBar(content: Text("Item added to cart !!!"));
+    _scaffoldKey.currentState.showSnackBar(snackBar);
   }
 }

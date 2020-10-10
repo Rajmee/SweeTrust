@@ -4,18 +4,20 @@ class BoughtFood extends StatefulWidget {
   final String id;
   final String name;
   final String imagePath;
-  final String category;
+  final String area;
+  final String lat;
+  final String lng;
   final double price;
-  final double discount;
   final double ratings;
 
   BoughtFood(
       {this.id,
       this.name,
       this.imagePath,
-      this.category,
+      this.area,
       this.price,
-      this.discount,
+      this.lat,
+      this.lng,
       this.ratings});
 
   @override
@@ -37,7 +39,7 @@ class _BoughtFoodState extends State<BoughtFood> {
             height: 230.0,
             width: 340.0,
             child: Image(
-              image: AssetImage(widget.imagePath),
+              image: NetworkImage(widget.imagePath),
               fit: BoxFit.cover,
             ),
           ),
@@ -73,36 +75,40 @@ class _BoughtFoodState extends State<BoughtFood> {
                     ),
                     Row(
                       children: <Widget>[
-                        Icon(
-                          Icons.star,
-                          color: Theme.of(context).primaryColor,
-                          size: 16.0,
-                        ),
-                        Icon(
-                          Icons.star,
-                          color: Theme.of(context).primaryColor,
-                          size: 16.0,
-                        ),
-                        Icon(
-                          Icons.star,
-                          color: Theme.of(context).primaryColor,
-                          size: 16.0,
-                        ),
-                        Icon(
-                          Icons.star,
-                          color: Theme.of(context).primaryColor,
-                          size: 16.0,
-                        ),
-                        Icon(
-                          Icons.star,
-                          color: Theme.of(context).primaryColor,
-                          size: 16.0,
-                        ),
-                        SizedBox(
-                          width: 10.0,
-                        ),
+                        // Icon(
+                        //   Icons.star,
+                        //   color: Theme.of(context).primaryColor,
+                        //   size: 16.0,
+                        // ),
+                        // Icon(
+                        //   Icons.star,
+                        //   color: Theme.of(context).primaryColor,
+                        //   size: 16.0,
+                        // ),
+                        // Icon(
+                        //   Icons.star,
+                        //   color: Theme.of(context).primaryColor,
+                        //   size: 16.0,
+                        // ),
+                        // Icon(
+                        //   Icons.star,
+                        //   color: Theme.of(context).primaryColor,
+                        //   size: 16.0,
+                        // ),
+                        // Icon(
+                        //   Icons.star,
+                        //   color: Theme.of(context).primaryColor,
+                        //   size: 16.0,
+                        // ),
+                        // SizedBox(
+                        //   width: 10.0,
+                        // ),
+                        // Text(
+                        //   "(" + widget.ratings.toString() + " Reviews)",
+                        //   style: TextStyle(color: Colors.grey),
+                        // ),
                         Text(
-                          "(" + widget.ratings.toString() + " Reviews)",
+                          widget.area,
                           style: TextStyle(color: Colors.grey),
                         ),
                       ],

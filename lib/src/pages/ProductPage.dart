@@ -31,6 +31,7 @@ class ProductPage extends StatefulWidget {
 
 class _ProductPageState extends State<ProductPage> {
   final firestoreInstance = Firestore.instance;
+  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
   // static int orderCount = 0;
 
   Map data;
@@ -39,6 +40,7 @@ class _ProductPageState extends State<ProductPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        key: _scaffoldKey,
         backgroundColor: bgColor,
         appBar: AppBar(
           elevation: 0,
@@ -144,6 +146,8 @@ class _ProductPageState extends State<ProductPage> {
                               width: 180,
                               child: froyoFlatBtn('Add to Cart', () {
                                 addOrder();
+                                _notifyAlert();
+                                Navigator.of(context).pop();
                               }),
                             )
                           ],
@@ -180,19 +184,30 @@ class _ProductPageState extends State<ProductPage> {
 
   addOrder() async {
     var firebaseUser = await FirebaseAuth.instance.currentUser();
+
     Random random = new Random();
     int orderCount = random.nextInt(100000) + 1000;
 
     firestoreInstance
-        .collection('customerdata')
+        .collection('customerData')
         .document(firebaseUser.phoneNumber)
-        .collection('orderCart')
+        .collection('cartItems')
         .document(orderCount.toString())
         .setData({
-      "orderNumber": "$orderCount",
+      "cartNumber": "$orderCount",
       "sweetName": "${widget.food.name}",
       "price": "${widget.food.price}",
-      "quantity": "$_quantity"
+      "quantity": "$_quantity",
+      "imgUrl": "${widget.food.imagePath}",
+      "lat": "${widget.food.lat}",
+      "lng": "${widget.food.lng}",
+      "area": "${widget.food.area}",
     });
+  }
+
+  _notifyAlert() async {
+    // Navigator.of(context).pop();
+    SnackBar snackBar = SnackBar(content: Text("Item added to cart !!!"));
+    _scaffoldKey.currentState.showSnackBar(snackBar);
   }
 }

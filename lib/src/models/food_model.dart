@@ -3,12 +3,12 @@ class Food {
   final String name;
   final String imagePath;
   final String description;
-  final String category;
+  final String lat;
+  final String lng;
   final double price;
-  final double discount;
   final double ratings;
-  final String district;
   final String area;
+  final String discount;
   bool userLiked;
 
   Food(
@@ -16,11 +16,11 @@ class Food {
       this.name,
       this.imagePath,
       this.description,
-      this.category,
       this.price,
-      this.discount,
       this.ratings,
-      this.district,
+      this.lat,
+      this.lng,
       this.area,
+      this.discount,
       this.userLiked});
 }

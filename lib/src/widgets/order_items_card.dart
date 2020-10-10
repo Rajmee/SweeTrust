@@ -5,10 +5,12 @@ class OrderItemsCard extends StatelessWidget {
   final String quantity;
   final String price;
   final String orderNumbr;
+  final String imgUrl;
 
   int _quantity = 1;
 
-  OrderItemsCard(this.name, this.quantity, this.price, this.orderNumbr);
+  OrderItemsCard(
+      this.name, this.quantity, this.price, this.orderNumbr, this.imgUrl);
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -26,8 +28,7 @@ class OrderItemsCard extends StatelessWidget {
               width: 70.0,
               decoration: BoxDecoration(
                   image: DecorationImage(
-                      image: AssetImage("assets/images/lunch.jpeg"),
-                      fit: BoxFit.cover),
+                      image: NetworkImage("$imgUrl"), fit: BoxFit.cover),
                   borderRadius: BorderRadius.circular(35.0),
                   boxShadow: [
                     BoxShadow(

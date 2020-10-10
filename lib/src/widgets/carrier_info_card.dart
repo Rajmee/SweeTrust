@@ -9,14 +9,12 @@ import 'car_req_button.dart';
 
 // ignore: must_be_immutable
 class CarrierInfoCard extends StatelessWidget {
-  final String carName;
-  final String carLocation;
+  final String carPhn;
   String customerNumber;
   final String carRatings;
   final String carCharge;
 
-  CarrierInfoCard(
-      this.carName, this.carLocation, this.carRatings, this.carCharge);
+  CarrierInfoCard(this.carPhn, this.carRatings, this.carCharge);
 
   @override
   Widget build(BuildContext context) {
@@ -44,23 +42,7 @@ class CarrierInfoCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       Text(
-                        "Carrier name: $carName",
-                        style: TextStyle(
-                          fontSize: 14.0,
-                          fontWeight: FontWeight.normal,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Divider(
-                    height: 10.0,
-                    color: Colors.grey,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Text(
-                        "Carrier location: $carLocation",
+                        "Carrier phone: $carPhn",
                         style: TextStyle(
                           fontSize: 14.0,
                           fontWeight: FontWeight.normal,

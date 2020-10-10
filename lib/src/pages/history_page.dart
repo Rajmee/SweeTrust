@@ -37,8 +37,8 @@ class _HistoryPageState extends State<HistoryPage> {
             GestureDetector(
               onTap: () => {
                 Navigator.of(context).push(MaterialPageRoute(
-                  builder: (BuildContext context) => OrderDetailsPage(),
-                )),
+                    // builder: (BuildContext context) => OrderDetailsPage(),
+                    )),
               },
               // margin: EdgeInsets.only(top: ),
               child: Center(

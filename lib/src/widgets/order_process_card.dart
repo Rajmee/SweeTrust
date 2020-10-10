@@ -10,13 +10,12 @@ import 'car_req_button.dart';
 // ignore: must_be_immutable
 class OrderProcessCard extends StatelessWidget {
   final String toDelivered;
-  final String customerName;
-  String customerNumber;
+  final String orderStatus;
   final String productName;
   final String productunit;
   final String price;
 
-  OrderProcessCard(this.toDelivered, this.customerName, this.productName,
+  OrderProcessCard(this.toDelivered, this.orderStatus, this.productName,
       this.productunit, this.price);
 
   @override
@@ -62,7 +61,7 @@ class OrderProcessCard extends StatelessWidget {
                           Padding(
                             padding: EdgeInsets.only(top: 10.0),
                             child: Text(
-                              "Delivery to",
+                              "From",
                               style: TextStyle(
                                   fontSize: 15.0, fontWeight: FontWeight.bold),
                             ),
@@ -140,11 +139,19 @@ class OrderProcessCard extends StatelessWidget {
                         children: <Widget>[
                           Padding(
                             padding: EdgeInsets.only(left: 0.0),
-                            child: Image.asset(
-                              'assets/icons/notconfirm.png',
-                              height: 20.0,
-                              width: 20.0,
-                            ),
+                            child: orderStatus == "orderPicked" ||
+                                    orderStatus == "productPicked" ||
+                                    orderStatus == "shipped"
+                                ? Image.asset(
+                                    'assets/icons/confirm.png',
+                                    height: 20.0,
+                                    width: 20.0,
+                                  )
+                                : Image.asset(
+                                    'assets/icons/notconfirm.png',
+                                    height: 20.0,
+                                    width: 20.0,
+                                  ),
                           ),
                           Padding(
                             padding: EdgeInsets.only(left: 10.0, top: 5.0),
@@ -165,11 +172,18 @@ class OrderProcessCard extends StatelessWidget {
                         children: <Widget>[
                           Padding(
                             padding: EdgeInsets.only(left: 0.0),
-                            child: Image.asset(
-                              'assets/icons/notconfirm.png',
-                              height: 20.0,
-                              width: 20.0,
-                            ),
+                            child: orderStatus == "productPicked" ||
+                                    orderStatus == "shipped"
+                                ? Image.asset(
+                                    'assets/icons/confirm.png',
+                                    height: 20.0,
+                                    width: 20.0,
+                                  )
+                                : Image.asset(
+                                    'assets/icons/notconfirm.png',
+                                    height: 20.0,
+                                    width: 20.0,
+                                  ),
                           ),
                           Padding(
                             padding: EdgeInsets.only(left: 10.0, top: 5.0),
@@ -190,11 +204,18 @@ class OrderProcessCard extends StatelessWidget {
                         children: <Widget>[
                           Padding(
                             padding: EdgeInsets.only(left: 0.0),
-                            child: Image.asset(
-                              'assets/icons/notconfirm.png',
-                              height: 20.0,
-                              width: 20.0,
-                            ),
+                            child: orderStatus == "productPicked" ||
+                                    orderStatus == "shipped"
+                                ? Image.asset(
+                                    'assets/icons/confirm.png',
+                                    height: 20.0,
+                                    width: 20.0,
+                                  )
+                                : Image.asset(
+                                    'assets/icons/notconfirm.png',
+                                    height: 20.0,
+                                    width: 20.0,
+                                  ),
                           ),
                           Padding(
                             padding: EdgeInsets.only(left: 10.0, top: 5.0),
@@ -215,11 +236,17 @@ class OrderProcessCard extends StatelessWidget {
                         children: <Widget>[
                           Padding(
                             padding: EdgeInsets.only(left: 0.0),
-                            child: Image.asset(
-                              'assets/icons/notconfirm.png',
-                              height: 20.0,
-                              width: 20.0,
-                            ),
+                            child: orderStatus == "shipped"
+                                ? Image.asset(
+                                    'assets/icons/confirm.png',
+                                    height: 20.0,
+                                    width: 20.0,
+                                  )
+                                : Image.asset(
+                                    'assets/icons/notconfirm.png',
+                                    height: 20.0,
+                                    width: 20.0,
+                                  ),
                           ),
                           Padding(
                             padding: EdgeInsets.only(left: 10.0, top: 5.0),

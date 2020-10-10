@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:sweet_trust/src/services/car_auth_service.dart';
+import 'package:sweet_trust/src/widgets/button_submit.dart';
 import 'package:sweet_trust/src/widgets/custom_list_tile.dart';
 import 'package:sweet_trust/src/widgets/small_button.dart';
 
@@ -254,24 +256,38 @@ class _CarProfilePageState extends State<CarProfilePage> {
               SizedBox(
                 height: 20.0,
               ),
-              Card(
-                child: Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        CustomListTile(
-                          icon: Icons.exit_to_app,
-                          text: "Sign out",
-                        ),
-                        // SizedBox(height: 10.0,),
-                      ],
-                    ),
-                  ),
-                ),
+              ButtonSubmit(
+                title: 'Sign out',
+                onTap: () {
+                  CarAuthService().signOut();
+                },
               ),
+              SizedBox(
+                height: 20.0,
+              ),
+              // Card(
+              //   child: Padding(
+              //     padding: EdgeInsets.all(16.0),
+              //     child: Container(
+              //       width: MediaQuery.of(context).size.width,
+              //       child: Column(
+              //         crossAxisAlignment: CrossAxisAlignment.start,
+              //         children: <Widget>[
+              //           // GestureDetector(
+              //           //   child: CustomListTile(
+              //           //     icon: Icons.exit_to_app,
+              //           //     text: "Sign out",
+              //           //   ),
+              //           //   onDoubleTap: () {
+              //           //     AuthService().signOut();
+              //           //   },
+              //           // ),
+              //           // SizedBox(height: 10.0,),
+              //         ],
+              //       ),
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         ),

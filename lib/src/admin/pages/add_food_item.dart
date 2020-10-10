@@ -129,10 +129,10 @@ class _AddFoodItemState extends State<AddFoodItem> {
         // I want to update the food item
         Map<String, dynamic> updatedFoodItem = {
           "title": title,
-          "category": category,
+          // "category": category,
           "description": description,
           "price": double.parse(price),
-          "discount": discount != null ? double.parse(discount) : 0.0,
+          // "discount": discount != null ? double.parse(discount) : 0.0,
         };
 
         final bool response = await updateFood(updatedFoodItem, widget.food.id);
@@ -155,10 +155,10 @@ class _AddFoodItemState extends State<AddFoodItem> {
         // I wnat to add new Item
         final Food food = Food(
           name: title,
-          category: category,
+          // category: category,
           description: description,
           price: double.parse(price),
-          discount: double.parse(discount),
+          // discount: double.parse(discount),
         );
         bool value = await addFood(food);
         if (value) {
@@ -182,13 +182,13 @@ class _AddFoodItemState extends State<AddFoodItem> {
           ? widget.food.name
           : widget.food != null && hint == "Description"
               ? widget.food.description
-              : widget.food != null && hint == "Category"
-                  ? widget.food.category
-                  : widget.food != null && hint == "Price"
-                      ? widget.food.price.toString()
-                      : widget.food != null && hint == "Discount"
-                          ? widget.food.discount.toString()
-                          : "",
+              // : widget.food != null && hint == "Category"
+              //     ? widget.food.category
+              : widget.food != null && hint == "Price"
+                  ? widget.food.price.toString()
+                  // : widget.food != null && hint == "Discount"
+                  //     ? widget.food.discount.toString()
+                  : "",
       decoration: InputDecoration(hintText: "$hint"),
       maxLines: maxLine,
       keyboardType: hint == "Price" || hint == "Discount"

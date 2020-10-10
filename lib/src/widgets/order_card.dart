@@ -5,15 +5,18 @@ class OrderCard extends StatefulWidget {
   final String quantity;
   final String price;
   final String orderNum;
+  final String imgurl;
 
-  const OrderCard(this.swtName, this.quantity, this.price, this.orderNum);
+  const OrderCard(
+      this.swtName, this.quantity, this.price, this.orderNum, this.imgurl);
 
   @override
   _OrderCardState createState() => _OrderCardState(
       swtName: this.swtName,
       quantity: this.quantity,
       price: this.price,
-      orderNum: this.orderNum);
+      orderNum: this.orderNum,
+      imgurl: imgurl);
 }
 
 class _OrderCardState extends State<OrderCard> {
@@ -23,8 +26,10 @@ class _OrderCardState extends State<OrderCard> {
   String quantity;
   String price;
   String orderNum;
+  String imgurl;
 
-  _OrderCardState({this.swtName, this.quantity, this.price, this.orderNum});
+  _OrderCardState(
+      {this.swtName, this.quantity, this.price, this.orderNum, this.imgurl});
 
   @override
   Widget build(BuildContext context) {
@@ -82,8 +87,7 @@ class _OrderCardState extends State<OrderCard> {
               width: 70.0,
               decoration: BoxDecoration(
                   image: DecorationImage(
-                      image: AssetImage("assets/images/lunch.jpeg"),
-                      fit: BoxFit.cover),
+                      image: NetworkImage("$imgurl"), fit: BoxFit.cover),
                   borderRadius: BorderRadius.circular(35.0),
                   boxShadow: [
                     BoxShadow(

@@ -30,3 +30,13 @@ FlatButton acceptBtn(String text, onPressed) {
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
   );
 }
+
+FlatButton trackcallBtn(String text, onPressed) {
+  return FlatButton(
+    onPressed: onPressed,
+    child: Text(text),
+    textColor: Colors.white,
+    color: Colors.blueAccent,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+  );
+}
