@@ -97,38 +97,35 @@ class _MainScreenState extends State<MainScreen> {
             padding: EdgeInsets.zero,
             children: <Widget>[
               HeaderDrawer(),
-              _createDrawerItem(
-                  icon: Icons.history,
-                  text: 'Your History',
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (BuildContext context) => HistoryPage()));
-                    // Navigator.pushReplacementNamed(context, "/History");
-                  }),
+              // _createDrawerItem(
+              //     icon: Icons.history,
+              //     text: 'Your History',
+              //     onTap: () {
+              //       Navigator.of(context).pop();
+              //       Navigator.of(context).push(MaterialPageRoute(
+              //           builder: (BuildContext context) => HistoryPage()));
+              //     }),
               _createDrawerItem(
                   icon: Icons.bookmark,
                   text: 'Order Status',
                   onTap: () {
-                    Navigator.of(context).pop();
                     Navigator.of(context).push(MaterialPageRoute(
                         builder: (BuildContext context) =>
                             AllOrderStatusPage()));
-                    // Navigator.pushReplacementNamed(context, "/History");
                   }),
-              Expanded(
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Column(
-                    children: <Widget>[
-                      ListTile(
-                        tileColor: Colors.grey,
-                        title: Text('version 0.0.1'),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              // Expanded(
+              //   child: Align(
+              //     alignment: Alignment.bottomCenter,
+              //     child: Column(
+              //       children: <Widget>[
+              //         ListTile(
+              //           tileColor: Colors.grey,
+              //           title: Text('version 0.0.1'),
+              //         ),
+              //       ],
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         ),
