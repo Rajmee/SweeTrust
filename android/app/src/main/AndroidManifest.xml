@@ -11,8 +11,8 @@
          FlutterApplication and put your custom class here. -->
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:label="sweet_trust"
-        android:icon="@mipmap/ic_launcher">
+        android:label="Sweetrust"
+        android:icon="@mipmap/launcher_icon">
         
         <meta-data
             android:name="com.google.android.geo.API_KEY"

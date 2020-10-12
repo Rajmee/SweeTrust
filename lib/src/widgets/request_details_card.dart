@@ -3,6 +3,7 @@ import 'package:sweet_trust/src/widgets/datetime_card.dart';
 import 'package:sweet_trust/src/widgets/divider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
+import 'package:fluttertoast/fluttertoast.dart';
 
 import 'car_req_button.dart';
 
@@ -18,7 +19,7 @@ class CarRequestDetailsCard extends StatelessWidget {
   final String datetime;
 
   // TextEditingController deliveryCharge = new TextEditingController();
-  String deliverycharge;
+  String deliverycharge = '';
 
   CarRequestDetailsCard(
     this.toDeliver,
@@ -383,8 +384,12 @@ class CarRequestDetailsCard extends StatelessWidget {
                           Padding(
                             padding: EdgeInsets.only(left: 130.0, top: 30.0),
                             child: acceptBtn('Accept', () {
-                              _pickOrder(orderId, deliverycharge);
-                              Navigator.of(context).pop();
+                              if (deliverycharge != '') {
+                                _pickOrder(orderId, deliverycharge);
+                                Navigator.of(context).pop();
+                              } else {
+                                showToast("Enter the delivery charge");
+                              }
                             }),
                           ),
                         ],
@@ -407,6 +412,16 @@ class CarRequestDetailsCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void showToast(String txt) {
+    Fluttertoast.showToast(
+        msg: txt,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.redAccent,
+        textColor: Colors.white);
   }
 
   _pickOrder(String order, String deliveryCharge) async {

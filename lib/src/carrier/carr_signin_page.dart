@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:sweet_trust/src/loader/color_loader.dart';
 import 'package:sweet_trust/src/scoped-model/carrier_model.dart';
 import 'package:sweet_trust/src/screens/main_screen.dart';
@@ -34,10 +35,8 @@ class _CarSignInPageState extends State<CarSignInPage> {
   bool _toggleVisibility = true;
   // bool isAuth = false;
 
-  String _phone;
-  String _password;
-  String pTest = "+8801850017691";
-  String psTest = "123";
+  String _phone = '';
+  String _password = '';
   String smsCode;
   String verificationId;
   String countryCode = "+88";
@@ -260,20 +259,25 @@ class _CarSignInPageState extends State<CarSignInPage> {
                                         title: codeSent ? 'Verify' : 'Sign in',
                                         // title: 'Sign in',
                                         onTap: () async {
-                                          if (isbuttonChnage == false) {
-                                            final CarrierModel carrierData =
-                                                await loginUser(
-                                                    _phone, _password);
+                                          if (_phone != '' && _password != '') {
+                                            if (isbuttonChnage == false) {
+                                              final CarrierModel carrierData =
+                                                  await loginUser(
+                                                      _phone, _password);
 
-                                            setState(() {
-                                              _carrierModel = carrierData;
-                                            });
+                                              setState(() {
+                                                _carrierModel = carrierData;
+                                              });
+                                            } else {
+                                              codeSent
+                                                  ? CarAuthService()
+                                                      .signInWithOTP(smsCode,
+                                                          verificationId)
+                                                  : verifyPhone(_phone);
+                                            }
                                           } else {
-                                            codeSent
-                                                ? CarAuthService()
-                                                    .signInWithOTP(
-                                                        smsCode, verificationId)
-                                                : verifyPhone(_phone);
+                                            showToast(
+                                                "Enter the phone and password");
                                           }
                                         },
                                       );
@@ -300,6 +304,16 @@ class _CarSignInPageState extends State<CarSignInPage> {
               );
             },
           );
+  }
+
+  void showToast(String txt) {
+    Fluttertoast.showToast(
+        msg: txt,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.SNACKBAR,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.redAccent,
+        textColor: Colors.white);
   }
 
   Future<CarrierModel> loginUser(String phone, String password) async {

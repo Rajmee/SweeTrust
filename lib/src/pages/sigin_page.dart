@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:sweet_trust/src/loader/color_loader.dart';
 import 'package:sweet_trust/src/screens/main_screen.dart';
 import 'package:sweet_trust/src/services/auth_service.dart';
@@ -31,10 +32,8 @@ class _SignInPageState extends State<SignInPage> {
   bool _toggleVisibility = true;
   // bool isAuth = false;
 
-  String _phone;
-  String _password;
-  String pTest = "+8801850017691";
-  String psTest = "123";
+  String _phone = '';
+  String _password = '';
   String smsCode;
   String verificationId;
   String countryCode = "+88";
@@ -259,18 +258,23 @@ class _SignInPageState extends State<SignInPage> {
                                         title: codeSent ? 'Verify' : 'Sign in',
                                         // title: 'Sign in',
                                         onTap: () async {
-                                          if (isbuttonChnage == false) {
-                                            final CustomerModel customerData =
-                                                await loginUser(
-                                                    _phone, _password);
-                                            setState(() {
-                                              _customerModel = customerData;
-                                            });
+                                          if (_phone != '' && _password != '') {
+                                            if (isbuttonChnage == false) {
+                                              final CustomerModel customerData =
+                                                  await loginUser(
+                                                      _phone, _password);
+                                              setState(() {
+                                                _customerModel = customerData;
+                                              });
+                                            } else {
+                                              codeSent
+                                                  ? AuthService().signInWithOTP(
+                                                      smsCode, verificationId)
+                                                  : verifyPhone(_phone);
+                                            }
                                           } else {
-                                            codeSent
-                                                ? AuthService().signInWithOTP(
-                                                    smsCode, verificationId)
-                                                : verifyPhone(_phone);
+                                            showToast(
+                                                "Enter the phone and password");
                                           }
                                         },
                                       );
@@ -323,6 +327,16 @@ class _SignInPageState extends State<SignInPage> {
       _notifyAlert();
       return null;
     }
+  }
+
+  void showToast(String txt) {
+    Fluttertoast.showToast(
+        msg: txt,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.SNACKBAR,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.redAccent,
+        textColor: Colors.white);
   }
 
   Future<void> verifyPhone(_phone) async {

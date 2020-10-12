@@ -449,10 +449,10 @@ class CarHistoryDetailsCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Padding(
-                              padding: EdgeInsets.only(left: 15.0),
+                              padding: EdgeInsets.only(left: 100.0),
                               child: status != "shipped"
                                   ? Text(
-                                      "You can call the customer and view destination point in map.",
+                                      "You can call the customer.",
                                       style: TextStyle(
                                         fontSize: 12.0,
                                         fontWeight: FontWeight.bold,
@@ -469,15 +469,7 @@ class CarHistoryDetailsCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Padding(
-                              padding: EdgeInsets.only(left: 50.0, top: 30.0),
-                              child: status != "shipped"
-                                  ? trackcallBtn('Map', () {
-                                      _pickupProduct(orderId);
-                                      Navigator.of(context).pop();
-                                    })
-                                  : null),
-                          Padding(
-                              padding: EdgeInsets.only(left: 80.0, top: 30.0),
+                              padding: EdgeInsets.only(left: 130.0, top: 30.0),
                               child: status != "shipped"
                                   ? trackcallBtn('Call', () {
                                       _callCustomer(customerPhn);
